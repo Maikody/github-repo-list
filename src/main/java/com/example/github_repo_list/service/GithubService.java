@@ -52,5 +52,16 @@ public class GithubService {
         log.info("Found {} branches for repository: {}/{}", branches.length, username, repoName);
         return Arrays.asList(branches);
     }
+
+    public List<Repository> getRepositoriesWithBranches(String username) {
+        return getRepositories(username)
+                .stream()
+                .filter(repo -> !repo.isFork())
+                .peek(repo -> {
+                    List<Branch> branches = getBranches(username, repo.getName());
+                    repo.setBranches(branches);
+                })
+                .toList();
+    }
 }
 
