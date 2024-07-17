@@ -28,10 +28,7 @@ class GithubServiceTest {
 
     @Test
     void shouldSuccessfullyGetRepositories() {
-        Repository[] repositories = {
-                new Repository("repo1", new Repository.Owner("owner1"), false, null),
-                new Repository("repo2", new Repository.Owner("owner2"), false, null)
-        };
+        Repository[] repositories = getRepositories();
 
         when(restTemplate.getForObject(anyString(), eq(Repository[].class))).thenReturn(repositories);
 
@@ -55,10 +52,7 @@ class GithubServiceTest {
 
     @Test
     void shouldSuccessfullyReturnGetBranches() {
-        Branch[] branches = {
-                new Branch("main", new Branch.Commit("sha1")),
-                new Branch("feature", new Branch.Commit("sha2"))
-        };
+        Branch[] branches = getBranches();
 
         when(restTemplate.getForObject(anyString(), eq(Branch[].class))).thenReturn(branches);
 
@@ -78,5 +72,35 @@ class GithubServiceTest {
         List<Branch> result = githubService.getBranches("username", "repo");
 
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void shouldSuccessfullyReturnRepositoriesWithBranches() {
+        Repository[] repositories = getRepositories();
+        Branch[] branches = getBranches();
+
+        when(restTemplate.getForObject(anyString(), eq(Repository[].class))).thenReturn(repositories);
+        when(restTemplate.getForObject(anyString(), eq(Branch[].class))).thenReturn(branches);
+
+        List<Repository> result = githubService.getRepositoriesWithBranches("username");
+
+        assertEquals(2, result.size());
+        assertEquals("repo1", result.getFirst().getName());
+        assertEquals("main", result.getFirst().getBranches().getFirst().getName());
+        assertEquals("sha1", result.getFirst().getBranches().getFirst().getCommit().getSha());
+    }
+
+    private static Repository[] getRepositories() {
+        return new Repository[]{
+                new Repository("repo1", new Repository.Owner("owner1"), false, null),
+                new Repository("repo2", new Repository.Owner("owner2"), false, null)
+        };
+    }
+
+    private static Branch[] getBranches() {
+        return new Branch[]{
+                new Branch("main", new Branch.Commit("sha1")),
+                new Branch("feature", new Branch.Commit("sha2"))
+        };
     }
 }
