@@ -27,6 +27,12 @@ public class AcceptHeaderFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
+        String path = httpRequest.getRequestURI();
+        if (path.startsWith("/actuator") || path.startsWith("/swagger") || path.startsWith("/v3/api-docs")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         String acceptHeader = httpRequest.getHeader("Accept");
         if (!MediaType.APPLICATION_JSON_VALUE.equals(acceptHeader)) {
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_ACCEPTABLE.value(), "Invalid Accept header");
